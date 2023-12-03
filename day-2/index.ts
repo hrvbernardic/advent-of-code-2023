@@ -1,16 +1,17 @@
 import { asyncReadFile } from '../util.ts';
 import { URL } from 'url';
 
-type CubeTypes = 'blue' | 'red' | 'green';
-type CubeCounts = { [color in CubeTypes]: number };
+type CubeColor = 'blue' | 'red' | 'green';
+type CubeCounts = { [color in CubeColor]: number };
 
-const cubeLimits: { [key in CubeTypes]: number } = {
+const cubeLimits: { [key in CubeColor]: number } = {
   red: 12,
   green: 13,
   blue: 14,
-};
+} as const;
 
-const games = await asyncReadFile(new URL('input.txt', import.meta.url));
+const games =
+  (await asyncReadFile(new URL('input.txt', import.meta.url))) ?? [];
 
 const indexSum = getValidGameIndexesSum(games);
 const powerSum = getSumOfPowerOfSets(games);
@@ -21,7 +22,7 @@ console.log(indexSum, powerSum);
 function getSumOfPowerOfSets(games: string[]) {
   let powerSum = 0;
   games.forEach((game) => {
-    const [gameInfo, cubes] = game.split(':');
+    const [_, cubes] = game.split(':');
     const rounds = cubes.split(';').map((c) => c.trim());
     const minCubeCount: CubeCounts = {
       blue: 0,
@@ -31,7 +32,8 @@ function getSumOfPowerOfSets(games: string[]) {
 
     rounds.map(getCubeCounts).forEach((counts) => {
       Object.entries(counts).forEach(([color, count]) => {
-        if (minCubeCount[color] < count) minCubeCount[color] = count;
+        if (minCubeCount[color as CubeColor] < count)
+          minCubeCount[color as CubeColor] = count;
       });
     });
 
@@ -45,7 +47,7 @@ function getValidGameIndexesSum(games: string[]) {
   let validGamesIndexSum = 0;
   games.forEach((game) => {
     const [gameInfo, cubes] = game.split(':');
-    const gameIndex = parseInt(gameInfo.split(' ').at(-1));
+    const gameIndex = parseInt(gameInfo.split(' ').at(-1) ?? '');
     const rounds = cubes.split(';').map((c) => c.trim());
 
     const isGameValid = rounds
@@ -74,7 +76,7 @@ function getCubeCounts(round: string): CubeCounts {
 
   colors.forEach((c) => {
     const [stringValue, color] = c.split(' ');
-    colorCounts[color] = parseInt(stringValue);
+    colorCounts[color as CubeColor] = parseInt(stringValue);
   });
 
   return colorCounts;
@@ -83,6 +85,5 @@ function getCubeCounts(round: string): CubeCounts {
 function checkValidCubeCounts(counts: CubeCounts) {
   if (counts.red > cubeLimits.red) return false;
   if (counts.blue > cubeLimits.blue) return false;
-  if (counts.green > cubeLimits.green) return false;
-  return true;
+  return counts.green <= cubeLimits.green;
 }

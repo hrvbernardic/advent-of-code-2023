@@ -1,5 +1,4 @@
 import { arrayRange, asyncReadFile } from '../util.ts';
-import { URL } from 'url';
 
 interface NumberPosition {
   rowIndex: number;
@@ -9,7 +8,8 @@ interface NumberPosition {
   surroundingCoordinates: [number, number][];
 }
 
-const engineMap = await asyncReadFile(new URL('input.txt', import.meta.url));
+const engineMap =
+  (await asyncReadFile(new URL('input.txt', import.meta.url))) ?? [];
 
 const partNumbersSum = getPartNumbersSum(engineMap);
 console.log(partNumbersSum);
@@ -20,7 +20,7 @@ console.log(gearRatiosSum);
 //
 
 export function getGearRatiosSum(engineMap: string[]) {
-  const gearIndices = [];
+  const gearIndices: [number, number][] = [];
   let gearRatiosSum = 0;
   const numberPositions = getNumberPositions(engineMap);
 
@@ -64,7 +64,7 @@ export function getNumberPositions(engineMap: string[]) {
         const position: NumberPosition = {
           rowIndex,
           columnRange: [y, y],
-          value: null,
+          value: 0,
           part: false,
           surroundingCoordinates: [],
         };

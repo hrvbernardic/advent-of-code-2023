@@ -22,9 +22,10 @@ const validStringMap = {
   seven: 7,
   eight: 8,
   nine: 9,
-};
+} as const;
 
-let calibrationValues = input.map(getStringCalibrationValue);
+let calibrationValues =
+  input?.map((text) => getStringCalibrationValue(text)) ?? [];
 
 const stringSum = calibrationValues.reduce((sum, value) => sum + value, 0);
 console.log(stringSum);
@@ -41,8 +42,8 @@ function getStringCalibrationValue(text: string) {
     )
     .sort((a, b) => a.index - b.index);
 
-  const first = matches.at(0).val;
-  const last = matches.at(-1).val;
+  const first = matches.at(0)?.val;
+  const last = matches.at(-1)?.val;
 
   return parseInt(`${first}${last}`);
 }
@@ -56,5 +57,8 @@ function getAllOccurrences(mainString: string, subString: string) {
     currentIndex = mainString.indexOf(subString, currentIndex + 1);
   }
 
-  return indices.map((i) => ({ index: i, value: subString }));
+  return indices.map((i) => ({
+    index: i,
+    value: subString as keyof typeof validStringMap,
+  }));
 }
