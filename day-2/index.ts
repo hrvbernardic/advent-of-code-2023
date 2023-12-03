@@ -1,6 +1,5 @@
 import { asyncReadFile } from '../util.ts';
-import {URL} from 'url';
-
+import { URL } from 'url';
 
 type CubeTypes = 'blue' | 'red' | 'green';
 type CubeCounts = { [color in CubeTypes]: number };

@@ -1,9 +1,5 @@
 import { arrayRange, asyncReadFile } from '../util.ts';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { URL } from 'url';
 
 interface NumberPosition {
   rowIndex: number;
@@ -13,7 +9,7 @@ interface NumberPosition {
   surroundingCoordinates: [number, number][];
 }
 
-const engineMap = await asyncReadFile(path.join(__dirname, 'input.txt'));
+const engineMap = await asyncReadFile(new URL('input.txt', import.meta.url));
 
 const partNumbersSum = getPartNumbersSum(engineMap);
 console.log(partNumbersSum);
