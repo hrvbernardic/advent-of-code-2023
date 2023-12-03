@@ -1,11 +1,7 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { URL } from 'url';
 import { asyncReadFile } from '../util.ts';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const input = await asyncReadFile(path.join(__dirname, 'input.txt'));
+const input = await asyncReadFile(new URL('input.txt', import.meta.url));
 
 const validStringMap = {
   '1': 1,

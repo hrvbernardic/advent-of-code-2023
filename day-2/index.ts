@@ -1,10 +1,6 @@
-import { join } from 'path';
 import { asyncReadFile } from '../util.ts';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import {URL} from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 type CubeTypes = 'blue' | 'red' | 'green';
 type CubeCounts = { [color in CubeTypes]: number };
@@ -15,7 +11,7 @@ const cubeLimits: { [key in CubeTypes]: number } = {
   blue: 14,
 };
 
-const games = await asyncReadFile(join(__dirname, 'input.txt'));
+const games = await asyncReadFile(new URL('input.txt', import.meta.url));
 
 const indexSum = getValidGameIndexesSum(games);
 const powerSum = getSumOfPowerOfSets(games);
