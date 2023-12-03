@@ -1,26 +1,19 @@
-import {createInterface} from "readline";
-import {join} from "path";
-import {createReadStream} from "fs";
+import path from 'path';
+import { fileURLToPath } from 'url';
+import {asyncReadFile} from "../util.ts";
 
-const fileStream = createReadStream(join(__dirname, 'input.txt'));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const rl = createInterface({
-    input: fileStream,
-    crlfDelay: Infinity
-});
+const input = await asyncReadFile(path.join(__dirname, 'input.txt'));
 
-let calibrationValues = [];
+let calibrationValues = input.map(getStringCalibrationValue);
 
-rl.on('line', (line: string) => {
-    calibrationValues.push(getStringCalibrationValue(line));
-});
+const stringSum = calibrationValues.reduce((sum, value) => sum + value, 0);
+console.log(stringSum);
 
-rl.on('close', () => {
-    const stringSum = calibrationValues.reduce((sum, value) => sum + value, 0);
-    console.log(stringSum);
-});
+//
 
-// String
 const validStringMap = {
     '1': 1,
     '2': 2,

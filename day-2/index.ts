@@ -1,6 +1,10 @@
-import {createReadStream} from "fs";
 import {join} from "path";
-import {createInterface} from "readline";
+import {asyncReadFile} from "../util.ts";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 type CubeTypes = 'blue' | 'red' | 'green';
 type CubeCounts = {[color in CubeTypes]: number};
@@ -11,24 +15,13 @@ const cubeLimits: {[key in CubeTypes]: number} = {
     blue: 14
 }
 
-const fileStream = createReadStream(join(__dirname, 'input.txt'));
+const games = await asyncReadFile(join(__dirname, 'input.txt'));
 
-const rl = createInterface({
-    input: fileStream,
-    crlfDelay: Infinity
-});
+const indexSum = getValidGameIndexesSum(games);
+const powerSum = getSumOfPowerOfSets(games);
+console.log(indexSum, powerSum);
 
-let games = [];
-
-rl.on('line', (line: string) => {
-    games.push(line)
-});
-
-rl.on('close', () => {
-    const indexSum = getValidGameIndexesSum(games);
-    const powerSum = getSumOfPowerOfSets(games);
-    console.log(indexSum, powerSum);
-});
+//
 
 function getSumOfPowerOfSets(games: string[]) {
     let powerSum = 0;

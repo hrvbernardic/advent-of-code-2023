@@ -1,6 +1,7 @@
 {
   "name": "advent-of-code",
   "version": "1.0.0",
+  "type": "module",
   "devDependencies": {
     "ts-node": "^10.9.1",
     "typescript": "^5.3.2",
