@@ -10,6 +10,11 @@
   },
   "description": "",
   "scripts": {
+    "day1": "bun day-1/index.ts",
+    "day2": "bun day-2/index.ts",
+    "day3": "bun day-3/index.ts",
+    "day4": "bun day-4/index.ts",
+    "day5": "bun day-5/index.ts",
     "format": "bun x prettier . --write"
   },
   "repository": {
