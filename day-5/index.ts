@@ -1,7 +1,6 @@
 import { asyncReadFile } from '../util.ts';
 
-const input =
-  (await asyncReadFile(new URL('input.txt', import.meta.url))) ?? [];
+const input = await asyncReadFile(new URL('input.txt', import.meta.url));
 
 const seedNumbers = getSeedNumbers(input);
 const mappingTable = getMappingTable(input);

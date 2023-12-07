@@ -4,6 +4,7 @@ export async function asyncReadFile(filename: string | URL) {
     return fileText.split(/\r?\n/) ?? [];
   } catch (err) {
     console.log(err);
+    return [];
   }
 }
 

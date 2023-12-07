@@ -24,8 +24,7 @@ const validStringMap = {
   nine: 9,
 } as const;
 
-let calibrationValues =
-  input?.map((text) => getStringCalibrationValue(text)) ?? [];
+let calibrationValues = input.map((text) => getStringCalibrationValue(text));
 
 const stringSum = calibrationValues.reduce((sum, value) => sum + value, 0);
 console.log(stringSum);

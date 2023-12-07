@@ -8,8 +8,7 @@ interface NumberPosition {
   surroundingCoordinates: [number, number][];
 }
 
-const engineMap =
-  (await asyncReadFile(new URL('input.txt', import.meta.url))) ?? [];
+const engineMap = await asyncReadFile(new URL('input.txt', import.meta.url));
 
 const partNumbersSum = getPartNumbersSum(engineMap);
 console.log(partNumbersSum);

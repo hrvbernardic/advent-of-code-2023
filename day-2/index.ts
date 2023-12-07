@@ -10,8 +10,7 @@ const cubeLimits: { [key in CubeColor]: number } = {
   blue: 14,
 } as const;
 
-const games =
-  (await asyncReadFile(new URL('input.txt', import.meta.url))) ?? [];
+const games = await asyncReadFile(new URL('input.txt', import.meta.url));
 
 const indexSum = getValidGameIndexesSum(games);
 const powerSum = getSumOfPowerOfSets(games);

@@ -1,17 +1,14 @@
 import { asyncReadFile } from '../util.ts';
 
-const input =
-  (await asyncReadFile(new URL('input.txt', import.meta.url))) ?? [];
+const input = await asyncReadFile(new URL('input.txt', import.meta.url));
 
-console.log('Part one: ', partOne(input));
-console.log('Part two: ', partTwo(input));
-
-//
-
-function partOne(input: string[]) {
-  return undefined;
+function partOne() {
+  return null;
 }
 
-function partTwo(input: string[]) {
-  return undefined;
+function partTwo() {
+  return null;
 }
+
+console.log('Part one: ', partOne());
+console.log('Part two: ', partTwo());
