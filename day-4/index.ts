@@ -1,81 +1,79 @@
-import { asyncReadFile } from '../util.ts';
+import { asyncReadFile } from '../util.ts'
 
-const input = await asyncReadFile(new URL('input.txt', import.meta.url));
+const input = await asyncReadFile(new URL('input.txt', import.meta.url))
 
-const game = parseGame(input);
+const game = parseGame(input)
 
 game.cards.forEach((card) => {
-  const currentId = card.cardId;
-  const winCount = card.matchedNumberCount;
-  const currentCardCount = game.cardCounts[currentId];
+  const currentId = card.cardId
+  const winCount = card.matchedNumberCount
+  const currentCardCount = game.cardCounts[currentId]
 
   for (let i = 1; i <= winCount; i++) {
-    game.cardCounts[i + currentId] += currentCardCount;
+    game.cardCounts[i + currentId] += currentCardCount
   }
-});
+})
 
-console.log(
-  Object.values(game.cardCounts).reduce((acc, curr) => acc + curr, 0),
-);
+console.log(Object.values(game.cardCounts).reduce((acc, curr) => acc + curr, 0))
 
 //
 
 interface Game {
-  cardCounts: CardCounts;
-  cards: Card[];
+  cardCounts: CardCounts
+  cards: Card[]
 }
 
 interface CardCounts {
-  [cardId: number]: number;
+  [cardId: number]: number
 }
 
 interface Card {
-  cardId: number;
-  winningNumbers: number[];
-  yourNumbers: number[];
-  matchedNumberCount: number;
+  cardId: number
+  winningNumbers: number[]
+  yourNumbers: number[]
+  matchedNumberCount: number
 }
 
 function parseGame(input: string[]) {
-  const cards = parseCards(input);
-  const cardCounts: CardCounts = {};
-  cards.forEach((card) => (cardCounts[card.cardId] = 1));
-  return { cards, cardCounts } satisfies Game;
+  const cards = parseCards(input)
+  const cardCounts: CardCounts = {}
+  cards.forEach((card) => (cardCounts[card.cardId] = 1))
+  return { cards, cardCounts } satisfies Game
 }
 
 function parseCards(input: string[]) {
   return input.map((line, index) => {
-    const numbers = line.split(':')[1].trim().split('|');
+    const numbers = line.split(':')[1].trim().split('|')
 
     const getNumbers = (line: string) =>
       line
         .trim()
         .split(' ')
         .filter((n) => n.length)
-        .map((n) => parseInt(n, 10));
+        .map((n) => parseInt(n, 10))
 
-    const winningNumbers = getNumbers(numbers[0]);
-    const yourNumbers = getNumbers(numbers[1]);
+    const winningNumbers = getNumbers(numbers[0])
+    const yourNumbers = getNumbers(numbers[1])
 
     return {
       cardId: index + 1,
       winningNumbers,
       yourNumbers,
       matchedNumberCount: getNumberOfWinningPoints(yourNumbers, winningNumbers),
-    } satisfies Card;
-  });
+    } satisfies Card
+  })
 }
 
 function getNumberOfWinningPoints(
   yourNumbers: number[],
   winningNumbers: number[],
 ) {
-  const resSet = new Set([...winningNumbers, ...yourNumbers]);
-  return winningNumbers.length + yourNumbers.length - resSet.size;
+  const resSet = new Set([...winningNumbers, ...yourNumbers])
+  return winningNumbers.length + yourNumbers.length - resSet.size
 }
 
 function getCardPoints(card: Card) {
   return card.matchedNumberCount === 0
     ? 0
-    : Math.pow(2, card.matchedNumberCount - 1);
+    : Math.pow(2, card.matchedNumberCount - 1)
 }

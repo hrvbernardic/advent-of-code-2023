@@ -19,6 +19,7 @@
     "day7": "bun day-7/index.ts",
     "day8": "bun day-8/index.ts",
     "day9": "bun day-9/index.ts",
+    "day10": "bun day-10/index.ts",
     "format": "bun x prettier . --write"
   },
   "repository": {
