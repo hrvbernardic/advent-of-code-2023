@@ -96,7 +96,6 @@ function isXYValid(x: number, y: number) {
 function getInitialPathCursors(startLocation: Location): PathCursor[] {
   const locations = Array.from(locationsMap.values())
 
-  // TODO: probably checking for diagonal positions which is wrong, Fix!!!
   return locations
     .filter(({ x, y, pipe }) => {
       const diffX = x - startLocation.x
