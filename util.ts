@@ -8,6 +8,16 @@ export async function asyncReadFile(filename: string | URL) {
   }
 }
 
+export async function writeFile(filename: string | URL, text: string[]) {
+  try {
+    await Bun.write(filename, text.join('\n'))
+    return
+  } catch (err) {
+    console.log(err)
+    return
+  }
+}
+
 export function arrayRange(start: number, stop: number, step = 1) {
   return Array.from(
     { length: (stop - start) / step + 1 },

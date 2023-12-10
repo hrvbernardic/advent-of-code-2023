@@ -5,8 +5,6 @@ const input = await asyncReadFile(new URL('input.txt', import.meta.url))
 const maxX = input[0].length - 1
 const maxY = input.length - 1
 
-type Dir = 'up' | 'down' | 'left' | 'right'
-
 interface Location {
   x: number
   y: number
@@ -15,6 +13,7 @@ interface Location {
 }
 
 interface PathCursor {
+  firstLocation: Location
   location: Location
   previousLocation: Location
 }
@@ -25,6 +24,16 @@ const adjacentDiffs = [
   [0, 1],
   [1, 0],
 ]
+
+const pipesDirMap = {
+  '|': 'vertical',
+  F: 'both',
+  L: 'both',
+  J: 'both',
+  '-': 'horizontal',
+  '7': 'both',
+  S: 'both',
+} as const
 
 const pipesMap = {
   '|': [
@@ -61,19 +70,18 @@ const pipesMap = {
 
 type Pipe = keyof typeof pipesMap
 
-const locationsMap = getLocationsMap(input)
-const locations = Array.from(locationsMap.values())
+const pipeLocationsMap = getPipeLocationsMap(input)
+const pipeLocations = Array.from(pipeLocationsMap.values())
 
 function isPipe(char: string): char is Pipe {
   return Object.keys(pipesMap).includes(char)
 }
 
-function getLocationsMap(input: string[]) {
-  const locationsArr = input.flatMap((line, y) =>
+function getAllLocationsEntries(input: string[]) {
+  return input.flatMap((line, y) =>
     line
       .split('')
       .map((c, x) => [c, x] as const)
-      .filter(([c]) => isPipe(c))
       .map(([c, x]) => {
         const id = `${x}-${y}`
         const loc = {
@@ -85,16 +93,23 @@ function getLocationsMap(input: string[]) {
         return [id, loc] as const
       }),
   )
-
-  return new Map<string, Location>(locationsArr)
 }
+
+function getPipeLocationsMap(input: string[]) {
+  return new Map<string, Location>(
+    getAllLocationsEntries(input).filter(([_, c]) => isPipe(c.pipe)),
+  )
+}
+
+const findDuplicate = (arr: string[]) =>
+  arr.filter((item, index) => arr.indexOf(item) !== index)[0]
 
 function isXYValid(x: number, y: number) {
   return x >= 0 && x <= maxX && y >= 0 && y <= maxY
 }
 
 function getInitialPathCursors(startLocation: Location): PathCursor[] {
-  const locations = Array.from(locationsMap.values())
+  const locations = Array.from(pipeLocationsMap.values())
 
   return locations
     .filter(({ x, y, pipe }) => {
@@ -107,7 +122,6 @@ function getInitialPathCursors(startLocation: Location): PathCursor[] {
       const validDir = Boolean(
         pipesMap['S'].find(([x, y]) => x === diffX && y === diffY),
       )
-      // check S is valid previous
       const isPrevS = pipesMap[pipe].some(
         ([sDiffX, sDiffY]) =>
           x + sDiffX === startLocation.x && y + sDiffY === startLocation.y,
@@ -115,7 +129,11 @@ function getInitialPathCursors(startLocation: Location): PathCursor[] {
 
       return adjacentX && adjacentY && pipe !== 'S' && validDir && isPrevS
     })
-    .map((l) => ({ previousLocation: startLocation, location: l }))
+    .map((l) => ({
+      previousLocation: startLocation,
+      location: l,
+      firstLocation: l,
+    }))
 }
 
 function isValidPathCursor(cursor: PathCursor) {
@@ -144,7 +162,7 @@ function isValidPathCursor(cursor: PathCursor) {
 }
 
 function getNextPathCursors(cursor: PathCursor) {
-  const { previousLocation, location } = cursor
+  const { previousLocation, location, firstLocation } = cursor
   const { x, y } = location
   const { x: prevX, y: prevY } = previousLocation
 
@@ -155,19 +173,61 @@ function getNextPathCursors(cursor: PathCursor) {
     .map(([diffX, diffY]) => [x + diffX, y + diffY])
     .filter(([x, y]) => isXYValid(x, y) && (x !== prevX || y !== prevY))
     .map(([x, y]) => `${x}-${y}`)
-    .map((locId) => locationsMap.get(locId))
+    .map((locId) => pipeLocationsMap.get(locId))
     .filter(Boolean)
     .filter((loc) => possibleIds.includes(loc!.id))
 
   const possiblePathCursors = possibleLocations.map(
-    (loc) => ({ previousLocation: location, location: loc }) as PathCursor,
+    (loc) =>
+      ({
+        previousLocation: location,
+        location: loc,
+        firstLocation,
+      }) as PathCursor,
   )
 
   return possiblePathCursors.filter((c) => isValidPathCursor(c))
 }
 
-function partOne(input: string[]) {
-  const startLocation = locations.find((l) => l.pipe === 'S')!
+function isLocationInLoop(
+  location: Location,
+  pathLocationsMap: Record<string, Location>,
+) {
+  const { x, y } = location
+  let breakLines = []
+
+  const isPartOfLoop = Boolean(pathLocationsMap[location.id])
+
+  if (isPartOfLoop) return false
+
+  for (let i = x; i <= maxX; i++) {
+    const dir = pipesDirMap[pathLocationsMap[`${i}-${y}`]?.pipe]
+    if (['vertical', 'both'].includes(dir))
+      breakLines.push(pathLocationsMap[`${i}-${y}`]?.pipe)
+  }
+
+  let breaklinesCount = 0
+
+  for (let i = 0; i < breakLines.length; i++) {
+    const pipe = breakLines[i]
+
+    if (['L', 'F'].includes(pipe)) {
+      if (i + 1 < breakLines.length) {
+        if (['L7', 'FJ'].includes(`${pipe}${breakLines[i + 1]}`)) {
+          breaklinesCount++
+        }
+        i++
+      }
+    } else {
+      breaklinesCount++
+    }
+  }
+
+  return breaklinesCount % 2 === 1
+}
+
+function partOne() {
+  const startLocation = pipeLocations.find((l) => l.pipe === 'S')!
 
   let step = 1
   let currentPathCursors = getInitialPathCursors(startLocation)
@@ -175,11 +235,9 @@ function partOne(input: string[]) {
   let finish = false
 
   while (!finish) {
-    const nextPathCursors = currentPathCursors.flatMap((c) =>
+    currentPathCursors = currentPathCursors.flatMap((c) =>
       getNextPathCursors(c),
     )
-    currentPathCursors = nextPathCursors
-    // check if finished
     const locIds = currentPathCursors.map((c) => c.location.id)
     const locIdSet = new Set(locIds)
     if (locIdSet.size < locIds.length) {
@@ -192,48 +250,65 @@ function partOne(input: string[]) {
   return step + 1
 }
 
-function partTwo(input: string[]) {
-  const startLocation = locations.find((l) => l.pipe === 'S')!
+function partTwo() {
+  const startLocation = pipeLocations.find((l) => l.pipe === 'S')!
 
   let currentPathCursors = getInitialPathCursors(startLocation)
   let finish = false
 
-  // let pathMap = currentPathCursors.reduce(
-  //   (map, cursor) => {
-  //     map[cursor.location.id] = []
-  //     return map
-  //   },
-  //   {} as Record<string, Location[]>,
-  // )
+  let pathMap = currentPathCursors.reduce(
+    (map, cursor) => {
+      map[cursor.firstLocation.id] = []
+      return map
+    },
+    {} as Record<string, Location[]>,
+  )
+  const pathLocations = []
 
   while (!finish) {
-    // currentPathCursors.forEach((cursor) => {
-    //   pathMap[cursor.location.id].push(cursor.location)
-    // })
+    currentPathCursors.forEach((cursor) => {
+      pathMap[cursor.firstLocation.id].push(cursor.location)
+    })
 
-    const nextPathCursors = currentPathCursors.flatMap((c) =>
+    currentPathCursors = currentPathCursors.flatMap((c) =>
       getNextPathCursors(c),
     )
-    currentPathCursors = nextPathCursors
 
-    const locIds = currentPathCursors.map((c) => c.location.id)
-    const locIdSet = new Set(locIds)
-    if (locIdSet.size < locIds.length) {
+    const cursorLocationIds = currentPathCursors.map((c) => c.location.id)
+
+    const duplicateLocationId = findDuplicate(cursorLocationIds)
+
+    if (duplicateLocationId) {
+      const [a, b] = currentPathCursors
+        .filter((c) => c.location.id === duplicateLocationId)
+        .map((c) => c.firstLocation.id)
+      const finalLocation = pipeLocationsMap.get(duplicateLocationId)
+      pathLocations.push(
+        ...pathMap[a],
+        ...pathMap[b],
+        finalLocation,
+        startLocation,
+      )
       finish = true
     }
   }
 
+  const pathLocationsMap = pathLocations.reduce(
+    (map, loc) => {
+      map[loc!.id] = loc!
+      return map
+    },
+    {} as Record<string, Location>,
+  )
+
   let sum = 0
+
+  getAllLocationsEntries(input).forEach(([id, loc]) => {
+    if (isLocationInLoop(loc, pathLocationsMap)) sum++
+  })
 
   return sum
 }
 
-console.log('Part one: ', partOne(input))
-console.log('Part two: ', partTwo(input))
-
-function prettyPrintCursor(cursor: PathCursor) {
-  const { previousLocation, location } = cursor
-  const position = `(${location.pipe}) [${location.x},${location.y}]`
-  const prevPosition = `(${previousLocation.pipe}) [${previousLocation.x},${previousLocation.y}]`
-  return `Cursor: ${prevPosition} -> ${position}`
-}
+console.log('Part one: ', partOne())
+console.log('Part two: ', partTwo())
