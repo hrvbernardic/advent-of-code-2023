@@ -18,7 +18,7 @@ console.log(gearRatiosSum)
 
 //
 
-export function getGearRatiosSum(engineMap: string[]) {
+function getGearRatiosSum(engineMap: string[]) {
   const gearIndices: [number, number][] = []
   let gearRatiosSum = 0
   const numberPositions = getNumberPositions(engineMap)
@@ -47,14 +47,14 @@ export function getGearRatiosSum(engineMap: string[]) {
   return gearRatiosSum
 }
 
-export function getPartNumbersSum(engineMap: string[]) {
+function getPartNumbersSum(engineMap: string[]) {
   const numberPositions = getNumberPositions(engineMap)
   const partNumberPositions = numberPositions.filter((p) => p.part)
 
   return partNumberPositions.reduce((sum, curr) => sum + curr.value, 0)
 }
 
-export function getNumberPositions(engineMap: string[]) {
+function getNumberPositions(engineMap: string[]) {
   const positions: NumberPosition[] = []
 
   engineMap.forEach((row, rowIndex) => {
@@ -87,7 +87,7 @@ export function getNumberPositions(engineMap: string[]) {
   return positions
 }
 
-export function isPartNumber(position: NumberPosition, engineMap: string[]) {
+function isPartNumber(position: NumberPosition, engineMap: string[]) {
   return position.surroundingCoordinates.some(
     ([x, y]) =>
       !isNumber(engineMap[x][y]) &&
@@ -96,7 +96,7 @@ export function isPartNumber(position: NumberPosition, engineMap: string[]) {
   )
 }
 
-export function getSurroundingPositions(
+function getSurroundingPositions(
   position: NumberPosition,
   engineMap: string[],
 ) {
@@ -134,10 +134,7 @@ export function getSurroundingPositions(
   return surroundingCoordinates
 }
 
-export function getNumberFromPosition(
-  position: NumberPosition,
-  engineMap: string[],
-) {
+function getNumberFromPosition(position: NumberPosition, engineMap: string[]) {
   const {
     rowIndex,
     columnRange: [start, end],
@@ -145,6 +142,6 @@ export function getNumberFromPosition(
   return parseInt(engineMap[rowIndex].substring(start, end + 1))
 }
 
-export function isNumber(value: string) {
+function isNumber(value: string) {
   return Number.isInteger(parseInt(value))
 }
